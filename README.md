@@ -23,7 +23,7 @@
 
 과제제출 URL
 ---
-[뉴스 타임즈 만들기] https://todo-in-list.netlify.app
+[뉴스 타임즈 만들기] https://strong-concha-caa6d1.netlify.app/
 
 
 기능

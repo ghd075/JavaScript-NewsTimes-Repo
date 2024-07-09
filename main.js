@@ -7,6 +7,7 @@ if(currentUrl === '127.0.0.1:5500') {
   newsApiUrl = `https://newsapi.org/v2/top-headlines?country=kr&apiKey=${API_KEY}`;
 // 배포용
 } else {
+  newsApiUrl = `https://strong-concha-caa6d1.netlify.app/top-headlines`;
 }
 
 let news = [];
