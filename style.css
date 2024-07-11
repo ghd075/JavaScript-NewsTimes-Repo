@@ -393,13 +393,19 @@ header h1 {
       padding-top: 0;
       /* 큰 화면에서는 패딩 제거 */
   }
+
+  .row {
+    max-width: 1280px; /* 원하는 최대 너비 설정 */
+    width: 100%;
+    margin: 0 auto;
+  }
 }
 
 .news-img-wrap {
   position: relative;
   width: 100%; /* 부모 요소의 너비를 100%로 설정 */
   height: 0; /* 높이를 0으로 설정하여 내부의 이미지가 설정할 수 있도록 함 */
-  padding-bottom: 56.25%; /* 16:9 종횡비를 위해 높이를 너비의 56.25%로 설정 */
+  padding-bottom: 80%; /* 16:9 종횡비를 위해 높이를 너비의 56.25%로 설정 */
   overflow: hidden; /* 넘치는 부분을 숨기기 위해 오버플로 속성을 설정 */
 }
 
@@ -410,6 +416,16 @@ header h1 {
   width: 100%; /* 부모 요소에 맞게 이미지 너비 설정 */
   height: 100%; /* 부모 요소에 맞게 이미지 높이 설정 */
   object-fit: cover; /* 이미지를 자르지 않고 부모 요소에 맞게 조정 */
+}
+
+.news-img-wrap img {
+  transition: all 0.3s ease;
+}
+
+.news-img-wrap img:hover {
+  font-weight: bold;
+  transform: scale(1.2);
+  transition: all 0.5s ease;
 }
 
 .title_link {
