@@ -39,6 +39,8 @@ const getNews = async() => {
     console.log('데이터 잘 들어오니 > ', data);
     if(response.status === 200) {
       if (data.articles.length === 0) {
+        _totalResults = 0; // 전체건수 초기화
+        pagingRender();
         throw new Error("요청하신 데이터가 없습니다. 다시 확인하세요.");
       }
       newsList = data.articles;
@@ -82,6 +84,7 @@ const getNewsByCategory = async (event) => {
 const render = () => {
   const newsContainer = document.getElementById('news-container');
   const noNewsMessage = document.getElementById('no-news-message');
+  const newsCount = document.getElementById("news-count");
   noNewsMessage.style.display = 'none';
   
   if(newsList.length === 0) {
@@ -113,6 +116,7 @@ const render = () => {
           </div>    
       `).join('');
       newsContainer.innerHTML = newsHTML;
+      newsCount.innerHTML = `<strong>총 건수 :</strong> ${_totalResults}건`;
   }
 }
 
@@ -123,6 +127,10 @@ const errorRender = (errorMessage) => {
 
   const noNewsContainer = document.getElementById("no-news-message");
   noNewsContainer.style.display = 'block';
+
+  const newsCount = document.getElementById("news-count");
+  newsCount.style.display = 'none';
+
   const errorHTML = `<div class="alert alert-danger" role="alert">
     <h3>${errorMessage}</h3>
   </div>
@@ -135,8 +143,16 @@ const errorRender = (errorMessage) => {
   });
 }
 
+// 페이지네이션 HTML 생성 함수
+const createPaginationItem = (pageNum, text, isDisabled = false, isActive = false) => {
+  return `<li class="page-item ${isDisabled ? "disN" : ""} ${isActive ? "active" : ""}" onclick="goPage(${pageNum})">
+            <a class="page-link" href="#">${text}</a>
+          </li>`;
+};
+
 // 페이지네이션
 const pagingRender = () => {
+  let paginationHTML = ``;
   // totalPage
   const totalPage = Math.ceil(_totalResults / _pageSize);
   // pageGroup
@@ -149,15 +165,15 @@ const pagingRender = () => {
   // firstPage
   const firstPage = lastPage - (_groupSize - 1) <= 0 ? 1 : lastPage - (_groupSize - 1);
 
-  let paginationHTML = ``;
-  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === 1 ? "disN" : ""}" onclick="goPage(1)"><a class="page-link" href="#"><<</a></li>`;
-  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === 1 ? "disN" : ""}" onclick="goPage(${_page - 1})"><a class="page-link" href="#">&lt;</a></li>`;
+  paginationHTML += createPaginationItem(1, "&lt;&lt;", totalPage < 5 || _page === 1);
+  paginationHTML += createPaginationItem(_page - 1, "&lt;", totalPage < 5 || _page === 1);
 
   for (let i = firstPage; i <= lastPage; i++) {
-      paginationHTML += `<li class="page-item ${_page === i ? "active" : ""}" onclick="goPage(${i})"><a class="page-link" href="#">${i}</a></li>`;
+    paginationHTML += createPaginationItem(i, i, false, _page === i);
   }
-  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === totalPage ? "disN" : ""}" onclick="goPage(${_page + 1})"><a class="page-link" href="#">&gt;</a></li>`;
-  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === totalPage ? "disN" : ""}" onclick="goPage(${totalPage})"><a class="page-link" href="#">>></a></li>`;
+
+  paginationHTML += createPaginationItem(_page + 1, "&gt;", totalPage < 5 || _page === totalPage);
+  paginationHTML += createPaginationItem(totalPage, "&gt;&gt;", totalPage < 5 || _page === totalPage);
 
   document.querySelector(".pagination").innerHTML = paginationHTML;
 };
