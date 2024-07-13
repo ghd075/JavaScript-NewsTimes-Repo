@@ -214,12 +214,12 @@ const getNewsByKeyword = async (event) => {
   } else {
     const category = document.querySelector('.navbar-nav .nav-item a').id;
     url = new URL(newsApiUrl);
-    url.searchParams.set("q", keyword);
-    
-    if (category !== "all") {
-      url.searchParams.set("category", category);
+    // 카테고리별 뉴스 검색
+    if (category === "all") {
+      url.searchParams.set("q", keyword);
     } else {
-      url.searchParams.delete("category");
+      url.searchParams.set("q", keyword);
+      url.searchParams.set("category", category);
     }
     _page = 1;
     await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
