@@ -23,9 +23,17 @@ const searchInput = document.querySelector('#search-form input');
 // 각 Menu 버튼 클릭 이벤트
 menus.forEach(menu => menu.addEventListener('click', (event) => getNewsByCategory(event)));
 
+// 변수
+let _totalResults = 0;
+let _page = 1;
+const _pageSize = 10;
+const _groupSize = 5;
+
 // 뉴스 데이터 가져오기 - 리팩토링
 const getNews = async() => {
   try {
+    url.searchParams.set("page", _page);
+    url.searchParams.set("pageSize", _pageSize);
     const response = await fetch(url);
     const data = await response.json();
     console.log('데이터 잘 들어오니 > ', data);
@@ -34,8 +42,11 @@ const getNews = async() => {
         throw new Error("요청하신 데이터가 없습니다. 다시 확인하세요.");
       }
       newsList = data.articles;
+      _totalResults = data.totalResults;
       console.log('data : ', newsList);
+      console.log('_totalResults : ', _totalResults);
       render();
+      pagingRender();
     } else {
       throw new Error(data.message);
     }
@@ -123,6 +134,39 @@ const errorRender = (errorMessage) => {
     location.reload();
   });
 }
+
+// 페이지네이션
+const pagingRender = () => {
+  // totalPage
+  const totalPage = Math.ceil(_totalResults / _pageSize);
+  // pageGroup
+  const pageGroup = Math.ceil(_page / _groupSize);
+  // lastPage
+  let lastPage = pageGroup * _groupSize;
+  if (lastPage > totalPage) {
+      lastPage = totalPage;
+  }
+  // firstPage
+  const firstPage = lastPage - (_groupSize - 1) <= 0 ? 1 : lastPage - (_groupSize - 1);
+
+  let paginationHTML = ``;
+  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === 1 ? "disN" : ""}" onclick="goPage(1)"><a class="page-link" href="#"><<</a></li>`;
+  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === 1 ? "disN" : ""}" onclick="goPage(${_page - 1})"><a class="page-link" href="#">&lt;</a></li>`;
+
+  for (let i = firstPage; i <= lastPage; i++) {
+      paginationHTML += `<li class="page-item ${_page === i ? "active" : ""}" onclick="goPage(${i})"><a class="page-link" href="#">${i}</a></li>`;
+  }
+  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === totalPage ? "disN" : ""}" onclick="goPage(${_page + 1})"><a class="page-link" href="#">&gt;</a></li>`;
+  paginationHTML += `<li class="page-item ${totalPage < 5 || _page === totalPage ? "disN" : ""}" onclick="goPage(${totalPage})"><a class="page-link" href="#">>></a></li>`;
+
+  document.querySelector(".pagination").innerHTML = paginationHTML;
+};
+
+// 페이지네이션 이벤트
+const goPage = (pageNum) => {
+  _page = pageNum;
+  getNews();
+};
 
 getLatestNews();
 
