@@ -219,15 +219,22 @@ const getNewsByKeyword = async (event) => {
     searchInput.focus();
     return;
   } else {
-    const category = document.querySelector('.navbar-nav .nav-item a.active').id;
+    let category = null;
+    const activeNavItem = document.querySelector('.navbar-nav .nav-item a.active');
 
-    console.log('category 어떤 것이 들어오니?? ', category);
-    url = new URL(newsApiUrl);
     // 카테고리별 뉴스 검색
+    if (activeNavItem) {
+      category = activeNavItem.id;
+      console.log('category 어떤 것이 들어오니?? ', category);
+    }
+
+    url = new URL(newsApiUrl);
     url.searchParams.set("q", keyword);
-    if (category) {
+    
+    if (category && category !== "all") {
       url.searchParams.set("category", category);
     }
+
     _page = 1;
     await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
     searchInput.value = ''; // 검색상자 비우기
