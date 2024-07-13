@@ -61,6 +61,7 @@ const getNews = async() => {
 // 뉴스 기사 가져오기
 const getLatestNews = async () => {
   url = new URL(newsApiUrl);
+  _page = 1;
   await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
 };
 
@@ -77,6 +78,7 @@ const getNewsByCategory = async (event) => {
     url.searchParams.delete("category");
   }
 
+  _page = 1;
   await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
 }
 
@@ -210,8 +212,16 @@ const getNewsByKeyword = async (event) => {
     searchInput.focus();
     return;
   } else {
+    const category = document.querySelector('.navbar-nav .nav-item a').id;
     url = new URL(newsApiUrl);
     url.searchParams.set("q", keyword);
+    
+    if (category !== "all") {
+      url.searchParams.set("category", category);
+    } else {
+      url.searchParams.delete("category");
+    }
+    _page = 1;
     await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
     searchInput.value = ''; // 검색상자 비우기
   }
