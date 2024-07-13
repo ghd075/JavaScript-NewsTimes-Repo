@@ -11,6 +11,8 @@ if(currentUrl === '127.0.0.1:5500') {
   newsApiUrl = `https://strong-concha-caa6d1.netlify.app/top-headlines`;
 }
 
+let url = new URL(newsApiUrl);
+
 let newsList = [];
 const menus = document.querySelectorAll('.navbar-nav .nav-item a');  //Menu의 버튼 요소들
 console.log('메뉴 : ', menus);
@@ -21,14 +23,32 @@ const searchInput = document.querySelector('#search-form input');
 // 각 Menu 버튼 클릭 이벤트
 menus.forEach(menu => menu.addEventListener('click', (event) => getNewsByCategory(event)));
 
-// 뉴스 정보 가져오기
+// 뉴스 데이터 가져오기 - 리팩토링
+const getNews = async() => {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log('데이터 잘 들어오니 > ', data);
+    if(response.status === 200) {
+      if (data.articles.length === 0) {
+        throw new Error("요청하신 데이터가 없습니다. 다시 확인하세요.");
+      }
+      newsList = data.articles;
+      console.log('data : ', newsList);
+      render();
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (error) {
+    console.log('error : ', error.message);
+    errorRender(error.message);
+  }
+}
+
+// 뉴스 기사 가져오기
 const getLatestNews = async () => {
-  const url = new URL(newsApiUrl);
-  const response = await fetch(url);
-  const data = await response.json();
-  newsList = data.articles;
-  render();
-  console.log('data : ', newsList);
+  url = new URL(newsApiUrl);
+  await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
 };
 
 
@@ -36,7 +56,7 @@ const getLatestNews = async () => {
 const getNewsByCategory = async (event) => {
   const category = event.target.id;
   console.log('카테고리 : ', category);
-  const url = new URL(newsApiUrl);
+  url = new URL(newsApiUrl);
   
   if (category !== "all") {
     url.searchParams.set("category", category);
@@ -44,23 +64,18 @@ const getNewsByCategory = async (event) => {
     url.searchParams.delete("category");
   }
 
-  const response = await fetch(url);
-  const data = await response.json();
-  console.log('데이터 잘 들어오니 > ', data);
-  newsList = data.articles;
-  render();
+  await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
 }
 
 // 화면에 뿌려주기
 const render = () => {
   const newsContainer = document.getElementById('news-container');
   const noNewsMessage = document.getElementById('no-news-message');
+  noNewsMessage.style.display = 'none';
+  
   if(newsList.length === 0) {
-    noNewsMessage.style.display = 'block';
     newsContainer.innerHTML = '';
   } else {
-    noNewsMessage.style.display = 'none';
-
     const newsHTML = newsList.map(
       (news) => `
            <div class="col-lg-6 col-12 mb-4">
@@ -89,13 +104,33 @@ const render = () => {
       newsContainer.innerHTML = newsHTML;
   }
 }
+
+// 에러핸들링
+const errorRender = (errorMessage) => {
+  const newsContainer = document.getElementById('news-container');
+  newsContainer.innerHTML = '';  // 기존 뉴스기사 삭제
+
+  const noNewsContainer = document.getElementById("no-news-message");
+  noNewsContainer.style.display = 'block';
+  const errorHTML = `<div class="alert alert-danger" role="alert">
+    <h3>${errorMessage}</h3>
+  </div>
+  <button id="refresh-button" class="btn btn-primary">새로고침</button>`;
+  noNewsContainer.innerHTML = errorHTML;
+
+  // 새로고침 버튼
+  document.getElementById('refresh-button').addEventListener('click', () => {
+    location.reload();
+  });
+}
+
 getLatestNews();
 
 // 1. 버튼들에 클릭이벤트주기
 // 2. 카테고리별 뉴스 가져오기
 // 3. 그 뉴스를 보여주기
 
-//검색창
+//검색창 숨기기/보이기
 document.getElementById('search-icon').addEventListener('click', function() {
   var searchBar = document.getElementById('search-bar');
   if (searchBar.style.display === 'none' || searchBar.style.display === '') {
@@ -114,15 +149,11 @@ const getNewsByKeyword = async (event) => {
     alert('검색어를 입력해주세요!');
     searchInput.focus();
     return;
-  } else{
-    const url = new URL(newsApiUrl);
+  } else {
+    url = new URL(newsApiUrl);
     url.searchParams.set("q", keyword);
-    const response = await fetch(url);
-    const data = await response.json();
-    console.log('데이터 잘 들어오니 > ', data);
-    newsList = data.articles;
-    searchInput.value = '';
-    render();
+    await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
+    searchInput.value = ''; // 검색상자 비우기
   }
 
 };
@@ -150,7 +181,3 @@ let backToTop = () => {
 backToTop();
 searchForm.addEventListener('submit',getNewsByKeyword);
 
-// 새로고침 버튼
-document.getElementById('refresh-button').addEventListener('click', () => {
-  location.reload();
-});
