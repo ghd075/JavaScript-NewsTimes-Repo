@@ -78,6 +78,13 @@ const getNewsByCategory = async (event) => {
     url.searchParams.delete("category");
   }
 
+  // 해당 카테고리로 active class CSS 지정
+  const menuItems = document.querySelectorAll('.navbar-nav .nav-item a');
+  menuItems.forEach((menuItem) => {
+    menuItem.classList.remove('active');
+  });
+  event.target.classList.add('active')           //신규 active 지정
+
   _page = 1;
   await getNews();        // 뉴스 데이터 가져오기 - 리팩토링
 }
@@ -212,13 +219,13 @@ const getNewsByKeyword = async (event) => {
     searchInput.focus();
     return;
   } else {
-    const category = document.querySelector('.navbar-nav .nav-item a').id;
+    const category = document.querySelector('.navbar-nav .nav-item a.active').id;
+
+    console.log('category 어떤 것이 들어오니?? ', category);
     url = new URL(newsApiUrl);
     // 카테고리별 뉴스 검색
-    if (category === "all") {
-      url.searchParams.set("q", keyword);
-    } else {
-      url.searchParams.set("q", keyword);
+    url.searchParams.set("q", keyword);
+    if (category) {
       url.searchParams.set("category", category);
     }
     _page = 1;
